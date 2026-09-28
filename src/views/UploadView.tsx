@@ -4,6 +4,7 @@ import { RoomImages } from '../assets/images';
 import { RoomPreAnalysis } from '../types';
 import { analyzeRoomPhoto } from '../services/api';
 import { useToast } from '../components/Toast';
+import { optimizeImageForUpload } from '../utils/image';
 
 interface UploadViewProps {
   onImageSelected: (imageDataUrl: string, preAnalysis: RoomPreAnalysis | null) => void;
@@ -29,29 +30,26 @@ export const UploadView: React.FC<UploadViewProps> = ({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('File size exceeds 10MB limit. Please choose a smaller photo.', 'error');
+    if (file.size > 15 * 1024 * 1024) {
+      showToast('File size exceeds limit. Please choose a photo under 15MB.', 'error');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const dataUrl = e.target?.result as string;
+    setIsAnalyzing(true);
+    try {
+      // Optimize image resolution & filesize before sending to API
+      const { dataUrl, mimeType } = await optimizeImageForUpload(file);
       setImagePreview(dataUrl);
 
-      // Trigger pre-analysis
-      setIsAnalyzing(true);
-      try {
-        const analysis = await analyzeRoomPhoto(dataUrl, file.type);
-        setPreAnalysis(analysis);
-        showToast('Room photo analyzed successfully!', 'success');
-      } catch (err) {
-        console.warn('Pre-analysis skipped', err);
-      } finally {
-        setIsAnalyzing(false);
-      }
-    };
-    reader.readAsDataURL(file);
+      // Trigger pre-analysis with optimized image
+      const analysis = await analyzeRoomPhoto(dataUrl, mimeType);
+      setPreAnalysis(analysis);
+      showToast('Room photo analyzed successfully!', 'success');
+    } catch (err: any) {
+      console.warn('Pre-analysis notice:', err?.message);
+    } finally {
+      setIsAnalyzing(false);
+    }
   }, [showToast]);
 
   const handleDrop = (e: React.DragEvent) => {

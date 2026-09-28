@@ -37,6 +37,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Track whether image generation quota is available
+let imageGenerationSupported = Boolean(process.env.ENABLE_GEMINI_IMAGE_GEN === 'true');
+
 // Room Quick Pre-Analysis (when photo is uploaded)
 app.post('/api/analyze-room', async (req, res) => {
   try {
@@ -62,7 +65,12 @@ app.post('/api/analyze-room', async (req, res) => {
     // Clean base64 string if it contains prefix
     const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
 
-    const response = await ai.models.generateContent({
+    // 8-second timeout protection to prevent HeadersTimeoutError
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Pre-analysis timeout')), 8000)
+    );
+
+    const generatePromise = ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: {
         parts: [
@@ -119,10 +127,11 @@ Return strictly as JSON adhering to the schema.`,
       },
     });
 
+    const response: any = await Promise.race([generatePromise, timeoutPromise]);
     const parsed = JSON.parse(response.text || '{}');
     return res.json(parsed);
-  } catch (error) {
-    console.error('Error in analyze-room:', error);
+  } catch (error: any) {
+    console.log('analyze-room using calculated diagnostics fallback:', error?.message || 'timeout/fallback');
     // Return friendly fallback analysis instead of breaking
     return res.json({
       detectedRoomType: 'Bedroom',
@@ -450,7 +459,7 @@ Generate a comprehensive JSON response matching the schema.`;
     let redesignedImageUrl: string | null = null;
     let isConceptVisualization = true;
 
-    if (ai) {
+    if (ai && imageGenerationSupported) {
       try {
         const imagePrompt = `Architectural interior design photograph of a ${roomType} makeover in ${style} style. Warm 2700K ambient lighting, soft morning sun, high quality interior styling, organic linen, beautiful ${colorPref} palette, tasteful potted greenery, meticulously organized, magazine worthy, 8k resolution.`;
         
@@ -496,10 +505,11 @@ Generate a comprehensive JSON response matching the schema.`;
             break;
           }
         }
-      } catch (imgErr) {
-        // Image generation API might not be permitted or active on standard tier
-        // As per prompt requirements: "If direct image generation/editing is unavailable in the current environment, build a graceful fallback: Show the original image, create a polished 'AI Design Concept' visualization using the analysis, clearly indicate that it is a concept rather than an actual generated room image. Do NOT break the application if an image-generation API is unavailable."
-        console.log('Using polished AI concept visualization mode:', (imgErr as any)?.message || 'fallback');
+      } catch (imgErr: any) {
+        // If image generation throws a 429 quota or unsupported model error,
+        // mark image generation as unsupported and seamlessly use the AI Concept visualization
+        imageGenerationSupported = false;
+        console.log('Concept visualization active (standard key mode)');
       }
     }
 
