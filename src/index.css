@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #FAF9F5;
+  color: #222120;
+}
+
+/* Custom scrollbars and slider styling */
+input[type="range"] {
+  accent-color: #355E4C;
+}
+

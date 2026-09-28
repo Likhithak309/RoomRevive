@@ -1,0 +1,6 @@
+{
+  "name": "RoomRevive - AI Interior Redesign & Room Makeover",
+  "description": "Transform a photo of your room into an AI-powered interior redesign personalized for your style, space, kept furniture, and budget.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
