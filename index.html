@@ -12,10 +12,48 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <!-- Official n8n Chat Widget -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <style>
+      :root {
+        --chat--color-primary: #1E3A2F;
+        --chat--color-primary-shade-50: #172D24;
+        --chat--color-primary-shade-100: #0F1E18;
+        --chat--color-white: #FAF9F5;
+        --chat--color-light: #F3EFE6;
+        --chat--color-dark: #222120;
+        --chat--border-radius: 18px;
+        --chat--header--background: #1E3A2F;
+        --chat--header--color: #FAF9F5;
+      }
+    </style>
   </head>
   <body class="bg-[#FAF9F5] text-[#222120] antialiased selection:bg-[#E2EBE4] selection:text-[#1E3A2F]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')
+        .then(({ createChat }) => {
+          createChat({
+            webhookUrl: 'https://likhitha30.app.n8n.cloud/webhook/ffec505f-b44e-45e7-a002-f7cada81f4b3/chat',
+            showWelcomeScreen: true,
+            initialMessages: [
+              'Hi there! 👋 Welcome to RoomRevive.',
+              'I am your AI Interior Assistant. Ask me anything about furniture arrangement, color schemes, lighting, or budget makeovers!'
+            ],
+            i18n: {
+              en: {
+                title: 'RoomRevive AI',
+                subtitle: 'Powered by n8n Workflow',
+                footer: '',
+                getStarted: 'Start Chatting',
+                inputPlaceholder: 'Ask a room makeover question...',
+              },
+            },
+          });
+        })
+        .catch((err) => console.error('n8n Chat initialization error:', err));
+    </script>
   </body>
 </html>
 

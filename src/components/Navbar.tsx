@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Sparkles, Bookmark } from 'lucide-react';
+import { Menu, X, Sparkles, Bookmark, Bot } from 'lucide-react';
 
 interface NavbarProps {
   currentView: string;
@@ -20,6 +20,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, savedCo
   const handleNavClick = (viewId: string) => {
     onNavigate(viewId);
     setMobileMenuOpen(false);
+  };
+
+  const toggleN8nChat = () => {
+    const btn = document.querySelector('.chat-window-toggle, .chat-button, button[aria-label*="chat"], .chat-toggle') as HTMLElement | null;
+    if (btn) {
+      btn.click();
+    }
   };
 
   return (
@@ -72,6 +79,16 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, savedCo
           {/* Zone 3: Primary Action & Mobile Toggle */}
           <div className="flex items-center gap-3">
             <button
+              onClick={toggleN8nChat}
+              className="hidden lg:inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-stone-700 hover:text-stone-900 bg-stone-100/80 hover:bg-stone-200/80 rounded-xl transition-all border border-stone-200 focus:outline-none"
+              title="Chat with RoomRevive AI Assistant"
+            >
+              <Bot className="w-3.5 h-3.5 text-[#355E4C]" />
+              <span>Ask AI</span>
+              <span className="text-[10px] font-mono uppercase bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-semibold">n8n</span>
+            </button>
+
+            <button
               onClick={() => handleNavClick('upload')}
               className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white bg-[#355E4C] rounded-xl hover:bg-[#2A4B3D] active:scale-[0.98] transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#355E4C]/30"
             >
@@ -111,7 +128,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, savedCo
               )}
             </button>
           ))}
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                toggleN8nChat();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold uppercase tracking-wider text-stone-800 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-xl transition-all shadow-xs"
+            >
+              <Bot className="w-4 h-4 text-[#355E4C]" />
+              <span>Ask RoomRevive AI (n8n)</span>
+            </button>
+
             <button
               onClick={() => handleNavClick('upload')}
               className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold uppercase tracking-wider text-white bg-[#355E4C] rounded-xl hover:bg-[#2A4B3D] transition-all shadow-sm"
